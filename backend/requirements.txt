@@ -1,0 +1,17 @@
+fastapi
+uvicorn
+langchain
+langchain-openai
+langchain-postgres
+psycopg[binary]
+asyncpg
+sqlalchemy[asyncio]
+pgvector
+networkx
+shap
+numpy
+pypdf2
+python-docx
+python-multipart
+pydantic
+pydantic-settings
