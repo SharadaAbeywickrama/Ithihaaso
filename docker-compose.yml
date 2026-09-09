@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  db:
+    image: ankane/pgvector:v0.5.1
+    environment:
+      - POSTGRES_USER=ithihaaso_user
+      - POSTGRES_PASSWORD=ithihaaso_pass
+      - POSTGRES_DB=ithihaaso_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  pgdata:
