@@ -1,5 +1,11 @@
 const API_URL = "http://localhost:8000/api";
 
+export interface DocumentItem {
+  id: number;
+  filename: string;
+  uploaded_at: string;
+}
+
 export const uploadDocument = async (file: File) => {
   const formData = new FormData();
   formData.append("file", file);
@@ -9,6 +15,12 @@ export const uploadDocument = async (file: File) => {
     body: formData,
   });
   if (!res.ok) throw new Error("Upload failed");
+  return res.json();
+};
+
+export const getDocuments = async (): Promise<DocumentItem[]> => {
+  const res = await fetch(`${API_URL}/documents`);
+  if (!res.ok) throw new Error("Failed to fetch documents");
   return res.json();
 };
 
@@ -33,3 +45,4 @@ export const getExplanation = async (targetType: string, targetId: string) => {
   if (!res.ok) throw new Error("Explanation not found");
   return res.json();
 };
+
