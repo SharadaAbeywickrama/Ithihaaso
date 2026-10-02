@@ -10,22 +10,38 @@ class GraphBuilderAgent:
         """Takes output from DocumentAnalyzer and updates the database/graph."""
         
         # 1. Upsert Entities
+        seen_entities = set()
         for e_data in analysis_result.get("entities", []):
-            # Very simple upsert logic (for production, use PostgreSQL ON CONFLICT)
+            entity_id = e_data.get("id")
+            if not entity_id: continue
+            
+            seen_entities.add(entity_id)
             entity = Entity(
-                id=e_data["id"],
-                type=e_data["type"],
-                description=e_data["description"]
+                id=entity_id,
+                type=e_data.get("type", "Unknown"),
+                description=e_data.get("description", "")
             )
-            db.merge(entity) # merge handles insert or update
+            await db.merge(entity) # fixed: await is required for async session
 
         # 2. Insert Relationships
         for r_data in analysis_result.get("relationships", []):
+            source = r_data.get("source")
+            target = r_data.get("target")
+            if not source or not target: continue
+            
+            # Ensure implicitly mentioned entities exist to prevent ForeignKeyViolation
+            if source not in seen_entities:
+                await db.merge(Entity(id=source, type="Unknown", description="Implicitly created"))
+                seen_entities.add(source)
+            if target not in seen_entities:
+                await db.merge(Entity(id=target, type="Unknown", description="Implicitly created"))
+                seen_entities.add(target)
+                
             rel = Relationship(
-                source_id=r_data["source"],
-                target_id=r_data["target"],
-                type=r_data["type"],
-                weight=r_data["weight"],
+                source_id=source,
+                target_id=target,
+                type=r_data.get("type", "RELATED_TO"),
+                weight=r_data.get("weight", 1.0),
                 evidence=[document_id]
             )
             db.add(rel)

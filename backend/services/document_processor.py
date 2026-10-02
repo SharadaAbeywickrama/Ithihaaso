@@ -2,7 +2,7 @@ import os
 import io
 from PyPDF2 import PdfReader
 from docx import Document
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 class DocumentProcessor:
     def __init__(self):

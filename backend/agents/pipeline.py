@@ -13,11 +13,17 @@ class AgentPipeline:
         # In a real system, we might only pass summary/chunks, but we'll pass full text here (or up to token limit)
         text_to_analyze = full_text[:15000] # truncate for safety
 
+        print(f"\n🚀 [AgentPipeline] Starting multi-agent analysis for Document ID: {document.id}...")
+        
         # 1. Document Analyzer
+        print(f"🕵️  [Document Analyzer Agent] Extracting entities, themes, and summaries...")
         analysis = await document_analyzer.analyze(text_to_analyze)
+        print(f"   -> Found {len(analysis.get('entities', []))} entities and {len(analysis.get('themes', []))} themes.")
         
         # 2. Source Critic
+        print(f"⚖️  [Source Critic Agent] Evaluating historical reliability and bias...")
         critique_result = await source_critic.critique(text_to_analyze)
+        print(f"   -> Reliability Score: {critique_result.get('reliability_score', 0.5)} | Bias Score: {1.0 - critique_result.get('feature_scores', {}).get('neutrality', 0.5)}")
         
         # Save Critique
         critique = SourceCritique(
@@ -33,6 +39,7 @@ class AgentPipeline:
         # Save Explanation for Critique
         feature_scores = critique_result.get("feature_scores", {})
         if feature_scores:
+            print(f"🧠 [SHAP Explanation Engine] Generating feature attributions for the critique...")
             # We mock the predict_func for SHAP here, or compute SHAP directly
             # For brevity in this pipeline, we'll store the feature values and mock SHAP values proportional to feature
             shap_mock = {k: v * 0.1 for k, v in feature_scores.items()} 
@@ -47,6 +54,8 @@ class AgentPipeline:
             )
 
         # 3. Graph Builder
+        print(f"🕸️  [Graph Builder Agent] Adding relationships to the global Knowledge Graph...")
         await graph_builder.build_from_analysis(db, analysis, document.id)
+        print(f"✅ [AgentPipeline] Document ID {document.id} processing complete!\n")
 
 pipeline = AgentPipeline()
